@@ -1,0 +1,16 @@
+[
+  {
+    "commune": "Bastia",
+    "adresse": "10 Rue Napoléon",
+    "section": "AB",
+    "numero_parcelle": "123",
+    "surface": 350
+  },
+  {
+    "commune": "Corte",
+    "adresse": "5 Avenue Paoli",
+    "section": "AC",
+    "numero_parcelle": "45",
+    "surface": 210
+  }
+]
