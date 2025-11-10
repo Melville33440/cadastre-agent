@@ -1,11 +1,11 @@
-import express from "express";
-import fs from "fs";
-import Fuse from "fuse.js";
+import express from 'express';
+import fs from 'fs';
+import Fuse from 'fuse.js';
 
 const app = express();
 const PORT = 3000;
 
-// Chargement du fichier JSON (assure-toi que ton fichier s'appelle bien cadastre.json)
+// Charger les données cadastrales
 let cadastreData = [];
 try {
   const data = fs.readFileSync("cadastre.json", "utf8");
@@ -15,27 +15,40 @@ try {
   console.error("❌ Erreur de lecture du fichier cadastre.json :", error.message);
 }
 
-// Configuration de Fuse.js pour la recherche floue
+// Configurer Fuse.js pour les données réelles
 const fuse = new Fuse(cadastreData, {
-  keys: ["adresse", "commune"],
+  keys: ["adresse", "commune", "numero_parcelle", "section"],
   threshold: 0.3,
 });
 
-// Route principale pour rechercher une adresse
+// Route principale pour rechercher dans le cadastre
 app.get("/cadastre", (req, res) => {
   const query = req.query.q;
-  if (!query) {
-    return res.status(400).json({ error: "Veuillez fournir un paramètre ?q=adresse" });
-  }
+  if (!query) return res.status(400).json({ error: "Paramètre ?q= requis" });
 
-  const resultats = fuse.search(query);
+  const results = fuse.search(query);
   res.json({
-    total: resultats.length,
-    results: resultats.slice(0, 5).map((r) => r.item),
+    total: results.length,
+    results: results.slice(0, 10).map(r => r.item),
   });
 });
 
-// Démarrage du serveur
+// Route de test avec des données fictives
+const exempleCadastres = [
+  { id: 1, parcelle: 'A123', propriétaire: 'Dupont' },
+  { id: 2, parcelle: 'B456', propriétaire: 'Martin' }
+];
+const fuseExemple = new Fuse(exempleCadastres, { keys: ['parcelle', 'propriétaire'], threshold: 0.3 });
+
+app.get('/recherche', (req, res) => {
+  const { q } = req.query;
+  if (!q) return res.status(400).json({ error: 'Paramètre q manquant' });
+
+  const résultats = fuseExemple.search(q).map(r => r.item);
+  res.json(résultats);
+});
+
+// Lancer le serveur
 app.listen(PORT, () => {
-  console.log(`✅ Serveur API démarré sur http://localhost:${PORT}`);
+  console.log(`🚀 Serveur cadastre-agent en ligne sur http://localhost:${PORT}`);
 });
